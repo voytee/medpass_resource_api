@@ -2,7 +2,7 @@ require File.expand_path('../lib/medpass_resource_api/', __FILE__)
  
 Gem::Specification.new do |gem|
   gem.name = 'medpass_resource_api'
-  gem.version = '0.0.9'
+  gem.version = '0.1.0'
   gem.date = Date.today.to_s
   gem.add_dependency('activeresource', '>=2.0.2')
   

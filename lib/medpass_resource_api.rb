@@ -109,7 +109,7 @@ module MedpassResourceApi
     
     def self.get_login(login_or_openid_url)
       core_medpass_url = configuration.medpass_url.split("http://").last
-      login_or_openid_url.gsub("/","").gsub('.beta.','.').split(".#{core_medpass_url}").last.gsub("http:","")
+      login_or_openid_url.gsub("/","").gsub('.beta.','.').split(".#{core_medpass_url}").last.gsub("http:","").gsub(".","-dot-")
     end
     
   end
