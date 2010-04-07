@@ -1,0 +1,114 @@
+- MedpassResourceAPi v 0.0.5 - restowe api dostepu do zasobów systemu medpass 2.0 -
+
+1) Instalacja:
+
+z ruby gems:
+gem install medpass_resource_api
+
+2) Konfiguracja
+
+- W config/environment.rb
+
+  config.gem 'medpass_resource_api'
+
+- Po bloku Rails::Initializer.run do |config| 
+           .
+           .
+           .
+           end
+
+	      MedpassResourceApi.configure do |config|
+	         			   config.api_key = '1234567890'
+ 					   		  config.medpass_url = 'http://medpass.pl'
+           end
+
+3) Użycie:
+
+Metody wywołujemy na rzecz klasy MedpassResourceApi::Base
+
+--->MedpassResourceApi::Base.get_user(openid_url_or_login) - zwraca usera (podstawowe dane: id, login, nazwa_wyświetlana(*), grupa(1,2,3 ... itd zgodnie z grupami medpass))
+
+Możemy rowniez wywołać tą metodę w formie z przekazaną aktualną datą / czasem:
+
+---->MedpassResourceApi::Base.get_user(openid_url_or_login, Date.today) - zwraca usera tylko w przypadku gdy nastapily zmiany w profilu i sa >= przekazana data
+
+-----------------------------------------------------------------------------------------
+
+
+
+
+---->MedpassResourceApi::Base.get_user_profile(openid_url_or_login) - zwraca pełny profil usera (analogicznie jak nasza SOAP-owa metoda export_profile)
+Tak samo jak get_user - mozemy przekazac datę naszej ostatniej wersji profilu, np:
+
+---->MedpassResourceApi::Base.get_user_profile(openid_url_or_login,'2010-01-01')
+
+
+------------------------------------------------------------------------------------------
+
+
+
+---->MedpassResourceApi::Base.get_user_friends(openid_url_or_login) - zwraca listę znajomych danego usera: znajomi indentyfikowani sa przez: id, login, display_name, email
+
+-------------------------------------------------------------------------------------------
+
+
+
+
+---->MedpassResourceApi::Base.get_user_message(openid_url_or_login, id_message'a) - zwraca wiadomość medpass o id id_message'a dla danego uzytkownika (pobranie wiadomosci - oznacza jej przeczytanie - wpis w DB)
+
+--------------------------------------------------------------------------------------------
+
+
+
+---->MedpassResourceApi::Base.get_user_received_messages(openid_url_or_login, options = {}) - zwraca otrzymane(wszystkie) message dla usera:
+dostepne opcje to: limit - ograniczenie ilosci, i app - nazwa aplikacji, np:
+
+---->MedpassResourceApi::Base.get_user_received_messages(openid_url_or_login, :limit => 10, :app =>'science') - zwraca 10 ostatnich wiadomosci wyslanych w ramach portalu science
+
+----------------------------------------------------------------------------------------------
+
+
+---->MedpassResourceApi::Base.get_user_read_messages(openid_url_or_login, options ={}) - jak wyżej tylko zwraca wiadomości oznaczone jako przeczytane
+
+-----------------------------------------------------------------------------------------------
+
+
+---->MedpassResourceApi::Base.get_user_unread_messages(openid_url_or_login, options ={}) - jak wyżej tylko zwraca wiadomości oznaczone jako nieprzeczytane
+
+-----------------------------------------------------------------------------------------------
+
+
+
+
+
+---->MedpassResourceApi::Base.get_user_sent_messages(openid_url_or_login, options ={}) - jak wyżej ale zwraca wiadomości wysłane
+
+W przypadku wiadomości mamy tez metode
+
+---->ActiveResource::Base.get_user_messages(openid_url_or_login, options ={}) - jak wyzej z tym ze mamy dodatkowa opcje: scope ->(:read, :sent, :received ), np:
+
+---->ActiveResource::Base.get_user_messages(openid_url_or_login, :scope => :unread, :app =>'science', :limit =>10)
+
+
+4) Wartości zwracane:
+
+Metody zwracają obiekt typu MedpassResourceApi::Result. Jego atrybuty dostepne są po kropce, np:
+
+---->@profile = MedpassResourceApi::Base.get_user_profile(openid_url_or_login)
+---->@profile.display_name
+
+W przypadku odwołania się do nieistniejącego atrybutu - nie jest zwracany bład a jedynie string "brak", np:
+
+---->@profile.ulubiony_drink  => "brak"
+
+Metody mogą zwrócić row
+niez obiekt typu MedpassResourceApi::NilResult - w przypadku braku wyników do zwrócenia,
+lub tablicę obiketow MedpassResourceApi::Result - dla metod zwracających kolekcje
+
+W przypadku blednej konfiguracji api key podnoszony jest wyjątek: ActiveResource::ForbiddenAccess
+
+5) Todo - bedzie dodane keszowanie memcache
+
+
+
+   
