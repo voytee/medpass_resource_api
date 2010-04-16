@@ -77,7 +77,36 @@ dostepne opcje to: limit - ograniczenie ilosci, i app - nazwa aplikacji, np:
 
 -----------------------------------------------------------------------------------------------
 
+Zakładanie konta
+MedpassResourceApi::Base.register_user(group_id, hash_of_args, portal_name = nil)
+ group_id => group_id z medpass czyli np zeby zalozyc konto niezwiazane z medycyna trzeba: przekazac 1
+ hash_of_args => argumenty usera przekazane jako hasz
+ portal_name => mozemy przekazac portal name - wtedy jesli bedzie wysłany mail do usera pojawi sie tam ta nazwa w przeciwnym razie bedzie to medpass.pl
 
+Przyklad:
+
+MedpassResourceApi::Base.register_user(1, {:login =>"fluffy", :email =>"fluffy@wp.pl"}, "evra.pl")
+
+Minimalne argumenty to : login i email -> wtedy na podany email wysylane jest wygenerowane haslo i login
+
+Inny przyklad: 
+MedpassResourceApi::Base.register_user(3, {:login =>'kazimierz.wichura',:password =>'wkaziu', :email =>"kazek@gmail.com", :first_name =>"Kazimierz", :last_name =>"Wichura" })
+
+Generalnie klucze hasza atrybutow powinny byc zgodne z nazwa pola w bazie (tabelka users, personal_profiles, specialtiy_profiles - w przypadku lekarza)
+
+
+
+MedpassResourceApi::Base.register_doctor(arguments_hash, portal_name = nil) - analogicznie jak wyzej tylko nie przekazujesz w pierwszym arg funkcji grupy bo jest ona z
+automatu ustawiona na 2 - czyli lekarz. Dodatkowo w argumentach mozemy przekazywac argumenty ze speciality profile - tutaj :pwz - jest WYMAGANY!!!
+
+
+Powyzsze funkcje zwracaja albo MedpassResourceApi::Result - z userem
+Albo MedpassResourceApi::ErrorResult - w przypadku bledow walidacji konta
+
+ErrorResult - ma nastepujace metody: errors - zwraca hasza wszystkich bledow typu :pole => tablica bledow
+errors_on(:pole) - zwraca bledy tylko na dane pole
+
+first_error_on(:pole) - zwraca pierwszy napotkany blad dotyczaca pola :pole
 
 
 

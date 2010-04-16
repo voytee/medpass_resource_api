@@ -1,6 +1,10 @@
 require 'singleton'
 
 module MedpassResourceApi
+
+  USER_ARGS = [:login, :password, :group_id].freeze
+  PERSONAL_PROFILE_ARGS = [:email, :first_name, :last_name, :dob, :address, :postcode, :city, :phone, :mobile, :occupation_id, :nd, :gadu, :skype, :city_id, :province_id, :title, :biography]
+  SPECIALTY_PROFILE_ARGS = [:pwz, :specialty_id]
   
   class Configuration
     attr_accessor :api_key
@@ -31,7 +35,30 @@ module MedpassResourceApi
       self.configuration ||= Configuration.new
       yield(configuration)
     end
+
     
+    def self.register_user(group_id = 1, args = {}, portal_name = nil)
+      arguments = {:user => get_user_args(args, group_id, portal_name), :personal_profile => get_personal_profile_args(args)}
+      begin
+        res = MedpassUser.post(:register, :api_key => @@configuration.api_key, :args => arguments)
+        wrap_result(JSON.parse(res.response.body))
+      rescue ActiveResource::ResourceInvalid => error
+        wrap_error(error)
+      end
+    end
+    
+    def self.register_doctor(args = {}, portal_name = nil)
+      arguments = {:user => get_user_args(args, 2, portal_name), 
+                   :personal_profile => get_personal_profile_args(args), 
+                   :specialty_profile => get_specialty_profile_args(args)}
+      begin
+        res = MedpassUser.post(:register, :api_key => @@configuration.api_key, :args => arguments)
+        wrap_result(JSON.parse(res.response.body))
+      rescue ActiveResource::ResourceInvalid => error
+        wrap_error(error)
+      end
+    end
+
     def self.get_user(login_or_openid_url, timestamp = nil)
       login = get_login(login_or_openid_url)
       res = begin
@@ -91,10 +118,34 @@ module MedpassResourceApi
       login = get_login(login_or_openid_url)
       wrap_result(MedpassMessage.get(:sent, :user_id => login, :limit => options[:limit], :app => options[:app], :api_key => @@configuration.api_key))
     end
+
+    def self.get_user_args(args, group_id, portal_name)
+      returning Hash.new do |hash| 
+        USER_ARGS.each{|k| hash[k] = args[k]}
+        hash[:group_id] = group_id
+        hash[:portal_name] = portal_name
+      end
+    end
+    
+    def self.get_personal_profile_args(args)
+      returning Hash.new do |hash| 
+        PERSONAL_PROFILE_ARGS.each{|k| hash[k] = args[k]}
+      end
+    end
+    
+    def self.get_specialty_profile_args(args)
+      returning Hash.new do |hash| 
+        SPECIALTY_PROFILE_ARGS.each{|k| hash[k] = args[k]}
+      end
+    end
     
     
     def self.wrap_result(result)
       result.is_a?(Array) ? wrap_all(result) : wrap_one(result)
+    end
+
+    def self.wrap_error(error)
+      ErrorResult.new(error)
     end
     
     def self.wrap_one(result)
@@ -112,6 +163,27 @@ module MedpassResourceApi
       login_or_openid_url.gsub("/","").gsub('.beta.','.').split(".#{core_medpass_url}").last.gsub("http:","").gsub(".","-dot-")
     end
     
+  end
+  
+
+  class ErrorResult
+    attr_reader :raw_errors
+    def initialize(error)
+      @raw_errors = JSON.parse(error.response.body)
+    end
+
+    def errors_on(field)
+      @raw_errors[field.to_s] rescue nil
+    end
+    
+    def first_error_on(field)
+      errors_on(field).first rescue errors_on(field)
+    end
+    
+    def errors
+      self.raw_errors
+    end
+
   end
   
   

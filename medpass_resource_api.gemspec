@@ -2,9 +2,10 @@ require File.expand_path('../lib/medpass_resource_api/', __FILE__)
  
 Gem::Specification.new do |gem|
   gem.name = 'medpass_resource_api'
-  gem.version = '0.1.0'
+  gem.version = '0.1.6'
   gem.date = Date.today.to_s
   gem.add_dependency('activeresource', '>=2.0.2')
+  gem.homepage = 'http://github.com/voytee/medpass_resource_api'
   
   gem.summary = "Restful API for accessing medpass medical community resources"
   gem.description = "For Activeweb company purpose only"
