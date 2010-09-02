@@ -72,7 +72,7 @@ module MedpassResourceApi
     def self.get_user_profile(login_or_openid_url, timestamp = nil)
       login = get_login(login_or_openid_url)
       res = begin
-              MedpassUser.find(login, :params =>{:timestamp => timestamp, :full_profile => true, :api_key => @@configuration.api_key})
+              MedpassUser.find(login, :params =>{:timestamp => timestamp, :full_profile => true, :api_key => @@configuration.api_key, :trust_root => @@configuration.trust_root})
             rescue ArgumentError
               nil
             end
@@ -177,7 +177,11 @@ module MedpassResourceApi
     end
     
     def first_error_on(field)
-      errors_on(field).first rescue errors_on(field)
+      if errors_on(field).is_a?(Array)
+        errors_on(field).first 
+      else
+        errors_on(field)
+      end
     end
     
     def errors
