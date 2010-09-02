@@ -9,6 +9,7 @@ module MedpassResourceApi
   class Configuration
     attr_accessor :api_key
     attr_accessor :medpass_url
+    attr_accessor :trust_root
   end
 
   def self.configure(&block)
